@@ -1,0 +1,15 @@
+## General Configuration Draft ##
+
+#zoo.cfg#
+
+tickTime=2000
+dataDir=/opt/zookeeper/tmp
+clientPort=2181
+initLimit=5
+syncLimit=2
+
+dataLogDir=/opt/zookeeper/log
+
+server.1=server1-dns:2888:3888
+server.2=server2-dns:2888:3888
+server.3=server3-dns:2888:3888
