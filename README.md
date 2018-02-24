@@ -1,2 +1,1 @@
-# zookeeper-ensemble-solr
-create zookeeper ensemble for maintaining solr clusters
+A list of tasks to learn zookeeper
