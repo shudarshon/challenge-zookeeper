@@ -1,0 +1,17 @@
+maxClientCnxns={{ zookeeper_max_client_connections }}
+# The number of milliseconds of each tick
+tickTime={{ zookeeper_tick_time }}
+# The number of ticks that the initial
+# synchronization phase can take
+initLimit={{ zookeeper_initial_limit }}
+# The number of ticks that can pass between
+# sending a request and getting an acknowledgement
+syncLimit={{ zookeeper_sync_limit }}
+# the directory where the snapshot is stored.
+dataDir={{ zookeeper_data_dir }}
+# the port at which the clients will connect
+clientPort={{ zookeeper_client_port }}
+
+{% for server in zookeeper_servers %}
+server.{{ server.index }}={{ server.ip }}:{{ server.ports }}
+{% endfor %}
