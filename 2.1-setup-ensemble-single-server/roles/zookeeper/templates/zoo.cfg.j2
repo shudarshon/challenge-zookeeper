@@ -10,7 +10,7 @@ syncLimit={{ zookeeper_sync_limit }}
 # the directory where the snapshot is stored.
 dataDir={{ zookeeper_data_dir }}
 # the port at which the clients will connect
-clientPort={{ zookeeper_client_port }}
+clientPort=218
 
 {% for server in zookeeper_servers %}
 server.{{ server.index }}={{ server.ip }}:{{ server.ports }}

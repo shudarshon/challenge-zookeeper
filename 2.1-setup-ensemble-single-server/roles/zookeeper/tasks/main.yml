@@ -1,29 +1,68 @@
 ---
 
-- name: Include OS-specific variables.
-  include_vars: "{{ ansible_os_family }}.yml"
-  tags: [variable]
+# Create zookeeper user group
+- name: Create zookeeper group
+  group:
+    name: "{{ zookeeper_group }}"
+    system: yes
+  tags: [create_zookeeper_group]
 
-- name: Ensure zookeeper is installed.
-  become: yes
-  package:
-    name: "{{ zookeeper_package_name }}"
-    state: present
-  notify:
-    - Enable Zookeeper
-  tags: [install]
+# Create zookeeper user as a system user
+- name: Create zookeeper user
+  user:
+    name: "{{ zookeeper_user }}"
+    group: "{{ zookeeper_group }}"
+    shell: /bin/bash
+    home: "{{zookeeper_home_dir}}"
+    system: yes
+    createhome: no
+  tags: [create_zookeeper_user]
 
-- name: Configure Zookeeper ID
-  template: src=myid.j2 dest={{ zookeeper_data_dir }}/myid
-  register: zookeeper_id_file
-  notify:
-    - Restart Zookeeper
+# Download and extract specific zookeeper version
+- name: Download and extract zookeeper archive
+  unarchive:
+    src: "{{ zookeeper_url }}"
+    dest: /opt
+    copy: no
+    #owner: "{{ zookeeper_user }}"
+    #group: root
+  tags: [download_extract]
+
+# Create myid file for each zookeeper ensemble participants
+- name: Create zookeeper configuration for zookeeper ensemble participants
+  shell: for i in `seq {{ number_of_participants }}` ; do mkdir -p /opt/{{ zookeeper_build_name }}/conf$i ; echo $i > /opt/{{ zookeeper_build_name }}/conf$i/myid ; done
   tags: [config_id]
 
-- name: Configure Zookeeper
-  template: src=zoo.cfg.j2 dest={{ zookeeper_conf_dir }}/zoo.cfg
-  notify:
-    - Restart Zookeeper
-  tags: [config_zk]
-  
+# Command to list zookeeper ensemble participants config directory
+- name: List zookeeper ensemble participants conf directory
+  shell: "ls -d /opt/{{ zookeeper_build_name }}/conf*"
+  register: confdir
+  tags: [list_config_dir]
+
+# Get the dump if register variable
+#- name: List zookeeper ensemble participants conf directory
+#  debug:
+#    var: confdir
+#  tags: [list_config_dir]
+
+# List each config folder through looping in stdout_lines array in dump result and copy zk config file
+- name: Copy zookeeper ensemble participants configuration
+  template: src=zoo.cfg.j2 dest="{{ item }}/zoo.cfg"
+  #debug:
+  #  var: "{{item}}"  #dump relative path of zookeeper ensemble configuration
+  with_items: "{{confdir.stdout_lines}}"
+  #notify:
+  #  - Restart Zookeeper
+  tags: [copy_config]
+
+# Change client port under specific directories of zookeeper ensemble participants
+- name: Change zookeeper client port
+  shell: sed -i -e "s/218/&{{ item.0 }}/1" {{ item.1 }}/zoo.cfg
+  with_together:
+    - "{{ numbers }}"
+    - "{{confdir.stdout_lines}}"
+  #notify:
+  #  - Restart Zookeeper
+  tags: [change_client_port]
+
 #- name: Configure Zookeeper JVM Properties
