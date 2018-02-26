@@ -65,4 +65,17 @@
   #  - Restart Zookeeper
   tags: [change_client_port]
 
+# Create Zookeper log and data directory
+- name: Create Zookeper log and data directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+    owner: "{{ zookeeper_user }}"
+    group: "{{ zookeeper_group }}"
+  with_items:
+    - /var/log/zookeeper
+    - /var/lib/zookeeper
+  tags: [create_data_log_dir]
+
 #- name: Configure Zookeeper JVM Properties
