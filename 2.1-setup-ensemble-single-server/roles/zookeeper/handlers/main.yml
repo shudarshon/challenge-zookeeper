@@ -2,5 +2,8 @@
 - name: Enable Zookeeper
   service: name=zookeeper enabled=yes state=started
 
+- name: Reload Systemd
+  command: systemctl daemon-reload
+
 - name: Restart Zookeeper
   service: name=zookeeper state=restarted

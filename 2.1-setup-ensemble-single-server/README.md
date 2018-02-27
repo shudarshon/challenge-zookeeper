@@ -1,6 +1,6 @@
 # Goal
 
-Goal is to install zookeeper for distributed service discovery in a single node. This installation process implements only standalone installation of zookeeper using ansible.
+Goal is to install zookeeper for distributed service discovery in a single node. This installation process implements multiple ZooKeeper ensemble participants in a single server using ansible. This situation is suitable only for test purpose.
 
 # Prerequisites
 
@@ -12,4 +12,4 @@ Change `hosts` and `play.yml` file accordingly. Then run `ansible-playbook -i ho
 
 # Issue
 
-If you find any issue then create it in the GitHub repo. For any suggestion, information or any help mail me at sdrsn.chaki@gmail.com.
+If you find any issue then create it in the GitHub repo. For any suggestion, information or any help mail me at sdrsn.chaki@gmail.com. You can get me on my blog [here](www.shudarshon.com).

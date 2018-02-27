@@ -28,43 +28,6 @@
     #group: root
   tags: [download_extract]
 
-# Create myid file for each zookeeper ensemble participants
-- name: Create zookeeper configuration for zookeeper ensemble participants
-  shell: for i in `seq {{ number_of_participants }}` ; do mkdir -p /opt/{{ zookeeper_build_name }}/conf$i ; echo $i > /opt/{{ zookeeper_build_name }}/conf$i/myid ; done
-  tags: [config_id]
-
-# Command to list zookeeper ensemble participants config directory
-- name: List zookeeper ensemble participants conf directory
-  shell: "ls -d /opt/{{ zookeeper_build_name }}/conf*"
-  register: confdir
-  tags: [list_config_dir]
-
-# Get the dump if register variable
-#- name: List zookeeper ensemble participants conf directory
-#  debug:
-#    var: confdir
-#  tags: [list_config_dir]
-
-# List each config folder through looping in stdout_lines array in dump result and copy zk config file
-- name: Copy zookeeper ensemble participants configuration
-  template: src=zoo.cfg.j2 dest="{{ item }}/zoo.cfg"
-  #debug:
-  #  var: "{{item}}"  #dump relative path of zookeeper ensemble configuration
-  with_items: "{{confdir.stdout_lines}}"
-  #notify:
-  #  - Restart Zookeeper
-  tags: [copy_config]
-
-# Change client port under specific directories of zookeeper ensemble participants
-- name: Change zookeeper client port
-  shell: sed -i -e "s/218/&{{ item.0 }}/1" {{ item.1 }}/zoo.cfg
-  with_together:
-    - "{{ numbers }}"
-    - "{{confdir.stdout_lines}}"
-  #notify:
-  #  - Restart Zookeeper
-  tags: [change_client_port]
-
 # Create Zookeper log and data directory
 - name: Create Zookeper log and data directory
   file:
@@ -77,5 +40,55 @@
     - /var/log/zookeeper
     - /var/lib/zookeeper
   tags: [create_data_log_dir]
+
+# Create myid file and conf directory for each zookeeper ensemble participants
+- name: Create zookeeper configuration directories for zookeeper ensemble participants
+  shell: for i in `seq {{ number_of_participants }}` ; do mkdir -p /opt/{{ zookeeper_build_name }}/conf$i ; echo $i > /opt/{{ zookeeper_build_name }}/conf$i/myid ; done
+  tags: [config_id]
+
+# Command to list zookeeper ensemble participants config directory
+- name: List zookeeper ensemble participants conf directory
+  shell: "ls -d /opt/{{ zookeeper_build_name }}/conf*"
+  register: confdir
+  tags: [list_config_dir]
+
+# Get the dump if register variable for debugging purpose
+#- name: List zookeeper ensemble participants conf directory
+#  debug:
+#    var: confdir
+#  tags: [list_config_dir]
+
+# List each config folder through looping in stdout_lines array in dump result and copy zk config file
+- name: Copy zookeeper ensemble participants configuration
+  template: src=zoo.cfg.j2 dest="{{ item }}/zoo.cfg"
+  #debug:
+  #  var: "{{item}}"  #dump relative path of zookeeper ensemble configuration
+  with_items: "{{confdir.stdout_lines}}"
+  tags: [copy_zk_config]
+
+# Copy zookeeper systemd script
+#- name: Install Systemd script.
+#  template: src=zookeeper.service.j2 dest=/lib/systemd/system/zookeeper.service
+#  notify:
+#    - Reload Systemd
+#    - Enable Zookeeper
+#  tags: [install_systemd]
+
+# Change client port under specific directories of zookeeper ensemble participants
+- name: Change zookeeper client port
+  shell: sed -i -e "s/218/&{{ item.0 }}/1" {{ item.1 }}/zoo.cfg
+  with_together:
+    - "{{ numbers }}"
+    - "{{confdir.stdout_lines}}"
+  #notify:
+  #  - Restart Zookeeper
+  tags: [change_client_port]
+
+
+# Start ZooKeeper ensemble
+- name: Start zookeeper
+  become: yes
+  shell: "for i in `seq {{ number_of_participants }}` ; do {{ zookeeper_home_dir }}/bin/zkServer.sh start-foreground   {{ zookeeper_home_dir }}/conf$i/zoo.cfg ; done"
+  tags: [start_zk]
 
 #- name: Configure Zookeeper JVM Properties

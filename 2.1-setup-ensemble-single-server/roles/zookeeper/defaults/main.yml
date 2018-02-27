@@ -8,7 +8,7 @@ zookeeper_url: "http://apache.claz.org/zookeeper/stable/{{ zookeeper_package }}"
 
 # Zookeeper installation directory
 
-zookeeper_home_dir: /opt/zookeeper
+zookeeper_home_dir: "/opt/{{ zookeeper_build_name }}"
 zookeeper_conf_dir: " /opt/zookeeper/conf"
 zookeeper_data_dir: "/var/lib/zookeeper"
 zookeeper_log_data_dir: "/var/log/zookeeper"
