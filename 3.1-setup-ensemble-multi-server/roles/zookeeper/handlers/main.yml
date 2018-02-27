@@ -1,0 +1,9 @@
+---
+- name: Reload Systemd
+  command: systemctl daemon-reload
+
+- name: Enable Zookeeper
+  service: name=zookeeper enabled=yes state=started
+
+- name: Restart Zookeeper
+  service: name=zookeeper state=restarted
