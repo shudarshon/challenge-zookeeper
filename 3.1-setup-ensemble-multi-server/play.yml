@@ -1,0 +1,7 @@
+- hosts: host
+  become: yes
+  become_method: sudo
+
+  roles:
+    #- oracle-java8
+    - zookeeper
