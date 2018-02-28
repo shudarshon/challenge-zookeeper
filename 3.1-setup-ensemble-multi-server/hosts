@@ -1,0 +1,9 @@
+[host]
+A.B.C.D myid=1 dns=ec2-A-B-C-D.compute-1.amazonaws.com
+E.F.G.H myid=2 dns=ec2-E-F-G-H.compute-1.amazonaws.com
+I.J.k.L myid=3 dns=ec2-I-J-K-L.compute-1.amazonaws.com
+
+[host:vars]
+ansible_ssh_user=ubuntu
+#ansible_ssh_user=ec2-user
+ansible_ssh_private_key_file=/home/ubuntu/keyfile/secret.pem
