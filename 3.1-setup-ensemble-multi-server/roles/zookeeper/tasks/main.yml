@@ -44,16 +44,7 @@
 # Create myid file for each zookeeper ensemble participants
 - name: Create zookeeper myid file for zookeeper ensemble participants
   template: src=myid.j2 dest="{{ zookeeper_data_dir }}/myid" owner={{ zookeeper_user }} group={{ zookeeper_group }}
-  tags: [config_myid]
-
-# Change myid file value for each zookeeper ensemble participants
-- name: Change value of zookeeper myid file for zookeeper ensemble participants
-  become: yes
-  become_user: "{{ zookeeper_user }}"
-  shell: sed -i -e "s/0/{{ item }}/1" {{ zookeeper_data_dir }}/myid
-  with_items:
-    - "{{ numbers }}"
-  tags: [config_myid]
+  tags: [copy_myid]
 
 # Copy zk config file
 - name: Copy zookeeper ensemble configuration
