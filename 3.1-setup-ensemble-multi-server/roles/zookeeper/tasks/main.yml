@@ -5,7 +5,7 @@
   group:
     name: "{{ zookeeper_group }}"
     system: yes
-  tags: [create_zookeeper_group]
+  tags: [create_zookeeper_user_group]
 
 # Create zookeeper user as a system user
 - name: Create zookeeper user
@@ -16,7 +16,7 @@
     home: "{{zookeeper_home_dir}}"
     system: yes
     createhome: no
-  tags: [create_zookeeper_user]
+  tags: [create_zookeeper_user_group]
 
 # Download and extract specific zookeeper version
 - name: Download and extract zookeeper archive
@@ -43,12 +43,21 @@
 
 # Create myid file for each zookeeper ensemble participants
 - name: Create zookeeper myid file for zookeeper ensemble participants
-  template: src=myid.j2 dest="{{ zookeeper_data_dir }}/myid"
-  tags: [config_id]
+  template: src=myid.j2 dest="{{ zookeeper_data_dir }}/myid" owner={{ zookeeper_user }} group={{ zookeeper_group }}
+  tags: [config_myid]
+
+# Change myid file value for each zookeeper ensemble participants
+- name: Change value of zookeeper myid file for zookeeper ensemble participants
+  become: yes
+  become_user: "{{ zookeeper_user }}"
+  shell: sed -i -e "s/0/{{ item }}/1" {{ zookeeper_data_dir }}/myid
+  with_items:
+    - "{{ numbers }}"
+  tags: [config_myid]
 
 # Copy zk config file
 - name: Copy zookeeper ensemble configuration
-  template: src=zoo.cfg.j2 dest="{{ zookeeper_home_dir }}/conf/zoo.cfg"
+  template: "src=zoo.cfg.j2 dest={{ zookeeper_home_dir }}/conf/zoo.cfg"
   tags: [copy_zk_config]
 
 # Set zookeeper user permission on directories
@@ -95,14 +104,14 @@
   tags: [install_systemd]
 
 # Test zooKeeper status
-- name: Return zooKeeper status
-  shell: echo "ruok" | nc -q 4 localhost 2181
-  register: zk_status
-  tags: [test_check]
+#- name: Return zooKeeper status
+#  shell: echo "ruok" | nc -q 4 localhost 2181
+#  register: zk_status
+#  tags: [test_check]
 
-- name: Debug zookeeper status
-  debug:
-    var: "{{ zk_status.stdout }}"
-  tags: [test_check]
+#- name: Debug zookeeper status
+#  debug:
+#    var: "{{ zk_status.stdout }}"
+#  tags: [test_check]
 
 #- name: Configure Zookeeper JVM Properties
