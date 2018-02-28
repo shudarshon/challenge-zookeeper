@@ -1,29 +1,108 @@
 ---
 
-- name: Include OS-specific variables.
-  include_vars: "{{ ansible_os_family }}.yml"
-  tags: [variable]
+# Create zookeeper user group
+- name: Create zookeeper group
+  group:
+    name: "{{ zookeeper_group }}"
+    system: yes
+  tags: [create_zookeeper_user_group]
 
-- name: Ensure zookeeper is installed.
-  become: yes
-  package:
-    name: "{{ zookeeper_package_name }}"
-    state: present
+# Create zookeeper user as a system user
+- name: Create zookeeper user
+  user:
+    name: "{{ zookeeper_user }}"
+    group: "{{ zookeeper_group }}"
+    shell: /bin/bash
+    home: "{{zookeeper_home_dir}}"
+    system: yes
+    createhome: no
+  tags: [create_zookeeper_user_group]
+
+# Download and extract specific zookeeper version
+- name: Download and extract zookeeper archive
+  unarchive:
+    src: "{{ zookeeper_url }}"
+    dest: /opt
+    copy: no
+    owner: root
+    group: root
+  tags: [download_extract]
+
+# Create Zookeper log and data directory
+- name: Create Zookeper log and data directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+    owner: "{{ zookeeper_user }}"
+    group: "{{ zookeeper_group }}"
+  with_items:
+    - /var/log/zookeeper
+    - /var/lib/zookeeper
+  tags: [create_data_log_dir]
+
+# Create myid file for each zookeeper ensemble participants
+- name: Create zookeeper myid file for zookeeper ensemble participants
+  template: src=myid.j2 dest="{{ zookeeper_data_dir }}/myid" owner={{ zookeeper_user }} group={{ zookeeper_group }}
+  tags: [copy_myid]
+
+# Copy zk config file
+- name: Copy zookeeper ensemble configuration
+  template: "src=zoo.cfg.j2 dest={{ zookeeper_home_dir }}/conf/zoo.cfg"
+  tags: [copy_zk_config]
+
+# Set zookeeper user permission on directories
+- name: Make the zookeeper user the owner of the config directories
+  file:
+    path: "{{zookeeper_home_dir}}/{{item}}"
+    owner: "{{ zookeeper_user }}"
+    group: "{{ zookeeper_group }}"
+    recurse: yes
+  with_items:
+    - conf
+    - contrib
+    - lib
+    - dist-maven
+    - recipes
+    - src
+  tags: [zk_directory_perm]
+
+# Set zookeeper user permission on bin directory
+- name: Make the zookeeper user the owner of the bin directory
+  file:
+    path: "{{zookeeper_home_dir}}/{{item}}"
+    owner: "{{ zookeeper_user }}"
+    recurse: yes
+  with_items:
+    - bin
+  tags: [zk_directory_perm]
+
+# Create app directory symbolic link
+- name: Symlink zookeeper to current version
+  file:
+    src: "{{ zookeeper_home_dir }}"
+    dest: "{{ zookeeper_app_path }}"
+    state: link
+  tags: [create_app_link]
+
+# Copy zookeeper systemd script
+- name: Install Systemd script
+  template: src=zookeeper.service.j2 dest=/lib/systemd/system/zookeeper.service
   notify:
+    - Reload Systemd
     - Enable Zookeeper
-  tags: [install]
-
-- name: Configure Zookeeper ID
-  template: src=myid.j2 dest={{ zookeeper_data_dir }}/myid
-  register: zookeeper_id_file
-  notify:
     - Restart Zookeeper
-  tags: [config_id]
+  tags: [install_systemd]
 
-- name: Configure Zookeeper
-  template: src=zoo.cfg.j2 dest={{ zookeeper_conf_dir }}/zoo.cfg
-  notify:
-    - Restart Zookeeper
-  tags: [config_zk]
-  
+# Test zooKeeper status
+#- name: Return zooKeeper status
+#  shell: echo "ruok" | nc -q 4 localhost 2181
+#  register: zk_status
+#  tags: [test_check]
+
+#- name: Debug zookeeper status
+#  debug:
+#    var: "{{ zk_status.stdout }}"
+#  tags: [test_check]
+
 #- name: Configure Zookeeper JVM Properties
