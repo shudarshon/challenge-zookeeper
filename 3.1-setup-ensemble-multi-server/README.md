@@ -12,7 +12,7 @@ Change `hosts` and `play.yml` file accordingly. Then run `ansible-playbook -i ho
 
 # Test
 
-To check zooKeeper status, use `cd /opt/zookeeper-3.4.10 && sudo -u zookeeper ./bin/zkServer.sh status` command in each servers.
+To check zookeeper status, use `cd /opt/zookeeper-3.4.10 && sudo -u zookeeper ./bin/zkServer.sh status` command in each servers. It should work on both ubuntu & centos.
 
 # Issue
 
