@@ -21,15 +21,8 @@ netstat -plntu
 
 # Detect Zookeeper Leader & Follower
 
-If zookeeper is run successfully then there will be one leader. To figure it
-first list zookeeper container ID,
+If zookeeper is run successfully then there will be one leader. To figure it out run the following command,
 
 ```
-docker ps | awk {'print $1'}
-```
-
-Then run following command to detect follower/leader status,
-
-```
-docker exec -it CONTAINER_ID bash bin/zkServer.sh status
+for i in `docker ps | awk {'print $1'} | tail -n +2`; do docker exec -it $i ./bin/zkServer.sh status | tail -n 1 ; done
 ```
