@@ -8,11 +8,18 @@ Java must be installed in the OS to run zookeeper. Since Ansible is used to comp
 
 
 # Procedure
-Change `hosts` and `play.yml` file accordingly. Then run `ansible-playbook -i hosts play.yml`.
+
+* If you not to choose manage infrastructure with terraform then Change `hosts` and `play.yml` file accordingly. Remember to change the variable label of ansible in var file (defaults/main.yml) of anisble role. Then run `ansible-playbook -i hosts play.yml`.
+
+* If you choose terraform then simply use:
+    * make init - only first time for installing necessary plugin
+    * make plan - see the reosurces going to be changed by terraform
+    * make apply - apply change
+    * make destroy - remove infrastructure components and rollback
 
 # Test
 
-To check zookeeper status, use `cd /opt/zookeeper-3.4.10 && sudo -u zookeeper ./bin/zkServer.sh status` command in each servers. It should work on both ubuntu & centos.
+To check zookeeper status, use `cd /opt/zookeeper* && sudo -u zookeeper ./bin/zkServer.sh status` command in each servers. It should work on both ubuntu & centos.
 
 # Issue
 

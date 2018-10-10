@@ -1,7 +1,7 @@
 ---
 # Zookeeper Version Download
 
-zookeeper_version: "3.4.10"
+zookeeper_version: "3.4.12"
 zookeeper_build_name: "zookeeper-{{ zookeeper_version }}"
 zookeeper_package: "{{ zookeeper_build_name }}.tar.gz"
 zookeeper_url: "http://apache.claz.org/zookeeper/stable/{{ zookeeper_package }}"
@@ -28,4 +28,4 @@ zookeeper_server_jvmflags: ""
 zookeeper_client_port: 2181
 zookeeper_peer_port: 2881
 zookeeper_leader_port: 3881
-zookeeper_servers: "{{ groups['host'] }}"   #host is the group in name in inventory file
+zookeeper_servers: "{{ groups['dev'] }}"   #host is the group in name in inventory file
