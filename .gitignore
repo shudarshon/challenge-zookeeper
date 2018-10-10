@@ -1,2 +1,5 @@
 */**/play.yml
 */**/hosts
+Makefile
+terraform
+terraform/*
